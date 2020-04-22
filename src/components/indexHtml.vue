@@ -1,7 +1,10 @@
 <template>
 <div>
     <canvas id="canvas2"></canvas>
-    <el-row style="padding-top: 45px;"></el-row>
+<!--  <el-row style="padding-top: 45px;"></el-row>-->
+   <el-row style="margin-left: 5%;">
+     <img src="../assets/hebeu_logo.png">
+   </el-row>
     <el-row  style="width: 50%;margin-left: 25%;">
 
       <el-steps :active="nowStep" finish-status="success">
@@ -15,12 +18,32 @@
   <el-row style="text-align: center"> <p style="color:red" v-html="data.info"> </p></el-row>
     <el-row :span="24" style="text-align: center;margin-top:45px;" >
       <el-col>
-        <video id="video"    style="border-radius: 20%;width: 450px;height: 450px;"  autoplay muted></video>
+        <video id="video"    style="border-radius: 20%;width: 250px;height: 250px;"  autoplay muted></video>
       </el-col>
       <el-col style="position: absolute;z-index: 999;">
-        <canvas id="overlay" style="border-radius: 20%;width: 450px;height: 450px;"  ></canvas>
+        <canvas id="overlay" style="border-radius: 20%;width: 250px;height: 250px;"  ></canvas>
       </el-col>
     </el-row>
+  <el-row style="text-align: center;margin-top: 45px;">
+        <el-button type="primary">教师登陆</el-button>
+        <br/>
+        <el-button style="margin-top: 15px;" type="info">在线预览</el-button>
+  </el-row>
+
+  <el-dialog title="注册" :visible.sync="registerDialog">
+    <el-form :model="student">
+      <el-form-item label="学号" :label-width="15">
+        <el-input v-model="student.id" auto-complete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="姓名" :label-width="15">
+        <el-input v-model="student.name" auto-complete="off"></el-input>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="registerDialog = false">取 消</el-button>
+      <el-button type="primary" @click="register">确 定</el-button>
+    </div>
+  </el-dialog>
 </div>
 </template>
 
@@ -33,6 +56,12 @@
     name: 'indexHtml',
     data(){
       return {
+        student:{
+          id:'',
+          name:'',
+          img:'',
+        },
+        registerDialog:false,
         video:'',
         nowStep:1,
         data:{
@@ -117,7 +146,6 @@
       }
       if(detections.length==1){
         let people=detections[0];
-      //  console.log(detections.detection)
          if(people.detection.score>0.5){
          //  this.photo();//拍照
            this.data.isFace=true;
@@ -152,11 +180,39 @@
                }
              }).then(response=>{
                // 返回学生信息[对象]
+               if(response.data.success==="true"){
+                 // ->检测成功跳转.
+               }else{
+                 this.$confirm('你的信息并不存在,请注册!或者再试一次.', '提示', {
+                   confirmButtonText: '注册',
+                   cancelButtonText: '再试一次',
+                   type: 'warning'
+                 }).then(() => {
+                   this.student.img=response.data.img;
+                   this.registerDialog=true;
+                 }).catch(() => {
+                   // 刷新页面.
+                   location.reload();
+                 });
+               }
              })
          }
 
       }
 
+    },
+      // 学生注册
+    register(){
+      this.$axios({
+        method:'post',
+        url: 'register',
+        data:this.student
+      }).then(response=>{
+        //-> 注册结果！。
+        this.registerDialog=false;
+        //-> 跳转.
+
+      }) ;
     },
     startVideo() {
     navigator.getUserMedia(
@@ -166,11 +222,14 @@
     )
   },
       photo () {
-        let canvas = document.getElementById("overlay")
-        let context = canvas.getContext("2d")
-        let video = document.getElementById("video")
-        context.drawImage(video, 0, 0, 450, 450)
-        this.data.isFinish.img = canvas.toDataURL("image/png")
+        if(this.data.isFinish.img===''){
+          let canvas = document.getElementById("overlay")
+          let context = canvas.getContext("2d")
+          let video = document.getElementById("video")
+          context.drawImage(video, 0, 0, 450, 450)
+          this.data.isFinish.img = canvas.toDataURL("image/png")
+        }
+      //  console.log(this.data.isFinish.img)   --- base64
       },
 
       sleep(time) {
