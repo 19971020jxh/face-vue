@@ -25,7 +25,7 @@
       </el-col>
     </el-row>
   <el-row style="text-align: center;margin-top: 45px;">
-        <el-button type="primary">教师登陆</el-button>
+        <el-button type="primary" @click="teachLoginDialog=true">教师登陆</el-button>
         <br/>
         <el-button style="margin-top: 15px;" type="info">在线预览</el-button>
   </el-row>
@@ -38,10 +38,30 @@
       <el-form-item label="姓名" :label-width="15">
         <el-input v-model="student.name" auto-complete="off"></el-input>
       </el-form-item>
+      <el-form-item label="邮箱" :label-width="15">
+        <el-input v-model="student.mail" auto-complete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="电话" :label-width="15">
+        <el-input v-model="student.phone" auto-complete="off"></el-input>
+      </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button @click="registerDialog = false">取 消</el-button>
       <el-button type="primary" @click="register">确 定</el-button>
+    </div>
+  </el-dialog>
+  <el-dialog title="登陆" :visible.sync="teachLoginDialog">
+    <el-form :model="teacher">
+      <el-form-item label="姓名" :label-width="15">
+        <el-input v-model="teacher.name" auto-complete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="密码" :label-width="15">
+        <el-input v-model="teacher.password" auto-complete="off"></el-input>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="registerDialog = false">取 消</el-button>
+      <el-button type="primary" @click="teachLogin">确 定</el-button>
     </div>
   </el-dialog>
 </div>
@@ -56,11 +76,18 @@
     name: 'indexHtml',
     data(){
       return {
+        teacher:{
+          name:'',
+          password:'',
+        },
         student:{
           id:'',
           name:'',
+          mail:'',
+          phone:'',
           img:'',
         },
+        teachLoginDialog:false,
         registerDialog:false,
         video:'',
         nowStep:1,
@@ -213,6 +240,36 @@
         //-> 跳转.
 
       }) ;
+    },
+      // -> 教师登陆,不存在则注册!
+    teachLogin(){
+      this.$axios({
+        method:'post',
+        url:'teacherLogin',
+        data:this.teacher
+      }).then(response=>{
+        if(response.data.success==true){
+          // --> 跳转
+        }else{
+          // -》
+          this.$confirm('该账号并不存在,请检查输入或点击注册！', '提示', {
+            confirmButtonText: '注册',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            // -》 注册
+            this.$axios({
+              method:'post',
+              url:'teachRegister',
+              data:this.teacher
+            }).then(response=>{
+              // -> 跳转.
+            });
+          })
+
+        }
+      });
+
     },
     startVideo() {
     navigator.getUserMedia(
