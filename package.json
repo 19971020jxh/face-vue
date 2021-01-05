@@ -17,7 +17,7 @@
     "@chenfengyuan/vue-qrcode": "^1.0.2",
     "@types/glob": "^7.1.1",
     "@types/node": "^13.9.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "echarts": "^4.7.0",
     "element": "^0.1.4",
     "element-ui": "^2.13.0",
